@@ -1,12 +1,12 @@
 C Project
 =========
 
-Name: yclone-project
+Name: ymake-skeleton
 
 Description
 ===========
 
-Clone a Yuneta project
+Make a new skeleton from a yuno
 
 License
 -------
