@@ -111,8 +111,14 @@ int render_string(char *rendered_str, int rendered_str_size, char *str, json_t *
                 int macro_len = ovector[2*i+1] - ovector[2*i];
                 //printf("%2d: %.*s\n", i, macro_len, str + ovector[2*i]);
                 char macro[NAME_MAX]; // enough of course
+                char value[NAME_MAX]; // enough of course
                 snprintf(macro, sizeof(macro), "%.*s", macro_len, str + ovector[2*i]);
-                const char *value = json_string_value(json_object_get(jn_values, macro));
+                const char *value_ = json_string_value(json_object_get(jn_values, macro));
+                if(is_file) {
+                    snprintf(value, sizeof(value), "+%s+", value_);
+                } else {
+                    snprintf(value, sizeof(value), "{{%s}}", value_);
+                }
                 char * new_value = replace_string(rendered_str, macro, value);
                 snprintf(rendered_str, rendered_str_size, "%s", new_value);
                 free(new_value);
@@ -240,19 +246,25 @@ int clone_tree_dir(
     do {
         build_path2(src_path, sizeof(src_path), src, entry->d_name);
 
-        render_string(rendered_str, sizeof(rendered_str), entry->d_name, jn_values, TRUE);
-        build_path2(dst_path, sizeof(dst_path), dst, rendered_str);
-
         if (is_link(src_path)) {
+            render_string(rendered_str, sizeof(rendered_str), entry->d_name, jn_values, FALSE);
+            build_path2(dst_path, sizeof(dst_path), dst, rendered_str);
+
             copy_link(src_path, dst_path);
 
         } else if (is_directory(src_path)) {
+            render_string(rendered_str, sizeof(rendered_str), entry->d_name, jn_values, FALSE);
+            build_path2(dst_path, sizeof(dst_path), dst, rendered_str);
+
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
                 continue;
             }
             clone_tree_dir(dst_path, src_path, jn_values);
 
         } else if (is_regular_file(src_path)) {
+            render_string(rendered_str, sizeof(rendered_str), entry->d_name, jn_values, TRUE);
+            build_path2(dst_path, sizeof(dst_path), dst, rendered_str);
+
             render_file(dst_path, src_path, jn_values);
         }
 
