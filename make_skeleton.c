@@ -5,7 +5,6 @@
  *          Copyright (c) 2015 Niyamaka.
  *          All Rights Reserved.
  ****************************************************************************/
-#include <sys/types.h>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <libgen.h>
@@ -41,119 +40,6 @@ struct find_sk_s {
 /****************************************************************************
  *
  ****************************************************************************/
-//PRIVATE int walk_tree(
-//    const char *root_dir,
-//    regex_t *reg,
-//    void *user_data,
-//    wd_option opt,
-//    int level,
-//    walkdir_cb cb)
-//{
-//    struct dirent *dent;
-//    DIR *dir;
-//    struct stat st;
-//    wd_found_type type;
-//    level++;
-//    int index=0;
-//
-//    if (!(dir = opendir(root_dir))) {
-//        printf("Cannot open '%s' directory, error '%s'\n", root_dir, strerror(errno));
-//        exit(-1);
-//    }
-//
-//    while ((dent = readdir(dir))) {
-//        char *dname = dent->d_name;
-//        if (!strcmp(dname, ".") || !strcmp(dname, ".."))
-//            continue;
-//        if (!(opt & WD_HIDDENFILES) && dname[0] == '.')
-//            continue;
-//
-//        int len = strlen(root_dir) + 2 + strlen(dname);
-//        char *path = malloc(len);
-//        if(!path) {
-//            printf("No memory, %s\n", strerror(errno));
-//            exit(-1);
-//        }
-//        memset(path, 0, len);
-//        strncpy(path, root_dir, len-1);
-//        strcat(path, "/");
-//        strcat(path, dname);
-//
-//        if(stat(path, &st) == -1) {
-//            printf("Stat('%s') failed: %s\n", path, strerror(errno));
-//            free(path);
-//            continue;
-//        }
-//
-//        type = 0;
-//        if(S_ISDIR(st.st_mode)) {
-//            /* recursively follow dirs */
-//            if((opt & WD_RECURSIVE)) {
-//                walk_tree(path, reg, user_data, opt, level, cb);
-//            }
-//            if ((opt & WD_MATCH_DIRECTORY)) {
-//                type = WD_TYPE_DIRECTORY;
-//            }
-//        } else if(S_ISREG(st.st_mode)) {
-//            if((opt & WD_MATCH_REGULAR_FILE)) {
-//                type = WD_TYPE_REGULAR_FILE;
-//            }
-//
-//        } else if(S_ISFIFO(st.st_mode)) {
-//            if((opt & WD_MATCH_PIPE)) {
-//                type = WD_TYPE_PIPE;
-//            }
-//        } else if(S_ISLNK(st.st_mode)) {
-//            if((opt & WD_MATCH_SYMBOLIC_LINK)) {
-//                type = WD_TYPE_SYMBOLIC_LINK;
-//            }
-//        } else if(S_ISSOCK(st.st_mode)) {
-//            if((opt & WD_MATCH_SOCKET)) {
-//                type = WD_TYPE_SOCKET;
-//            }
-//        } else {
-//            // type not implemented
-//            type = 0;
-//        }
-//
-//        if(type) {
-//            if (regexec(reg, dname, 0, 0, 0)==0) {
-//                if(!(cb)(user_data, type, path, root_dir, dname, level, index)) {
-//                    // returning FALSE: don't want continue traverse
-//                    break;
-//                }
-//                index++;
-//            }
-//        }
-//        free(path);
-//    }
-//    closedir(dir);
-//    return 0;
-//}
-
-///****************************************************************************
-// *  Walk directory tree
-// *  match only one pattern a todo lo encontrado.
-// ****************************************************************************/
-//PRIVATE int mywalk_dir_tree(
-//    const char *root_dir,
-//    const char *pattern,
-//    wd_option opt,
-//    walkdir_cb cb,
-//    void *user_data)
-//{
-//    regex_t r;
-//
-//    if(regcomp(&r, pattern, REG_EXTENDED | REG_NOSUB)!=0) {
-//        printf("regcomp('%s') failed\n", pattern);
-//        return -1;
-//    }
-//
-//    int ret = walk_tree(root_dir, &r, user_data, opt, 0, cb);
-//    regfree(&r);
-//    return ret;
-//}
-//
 /***************************************************************************
  *  Upper
  ***************************************************************************/

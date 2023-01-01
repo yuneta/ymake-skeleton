@@ -47,7 +47,7 @@ const char *argp_program_bug_address = APP_SUPPORT;
 
 /* Program documentation. */
 static char doc[] =
-  "ymake-skeleton -- a Yuneta utility to make a new skeleton from a yuno.\n"
+  "ymake-skeleton -- a Yuneta utility to make a new skeleton from a yuno project or gclass source code.\n"
 "Ex: ymake-skeleton ./gate_frigo yuno_gate --yunorole=gate_frigo --rootname=gate_frigo,frigo";
 
 /* A description of the arguments we accept. */
