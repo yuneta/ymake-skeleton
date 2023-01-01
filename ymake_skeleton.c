@@ -30,8 +30,8 @@
 struct arguments
 {
     char *args[MAX_ARGS+1];     /* positional args */
-    char *source_keyword;           /* source project keyword */
-    char *destination_keyword;      /* destination project keyword */
+    char *yunorole;             /* yunorole keyword */
+    char *rootname;             /* rootname keyword */
 };
 
 /***************************************************************************
@@ -47,15 +47,16 @@ const char *argp_program_bug_address = APP_SUPPORT;
 
 /* Program documentation. */
 static char doc[] =
-  "ymake-skeleton -- a Yuneta utility to make a new skeleton from a yuno.";
+  "ymake-skeleton -- a Yuneta utility to make a new skeleton from a yuno.\n"
+"Ex: ymake-skeleton ./gate_frigo yuno_gate --yunorole=gate_frigo --rootname=gate_frigo,frigo";
 
 /* A description of the arguments we accept. */
 static char args_doc[] = "SOURCE-PROJECT DESTINATION-PROJECT";
 
 /* The options we understand. */
 static struct argp_option options[] = {
-{"src-keyword",     's',    "KEYWORD",  0,   "Source keyword", 1},
-{"dst-keyword",     'd',    "KEYWORD",  0,   "Destination keyword", 2},
+{"yunorole",        'r',    "KEYWORD",  0,   "YunoRole keyword", 1},
+{"rootname",        'n',    "KEYWORD",  0,   "RootName keyword(s) (separated by commas if more than one)", 2},
 {0}
 };
 
@@ -79,12 +80,12 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
     struct arguments *arguments = state->input;
 
     switch (key) {
-    case 's':
-        arguments->source_keyword = arg;
+    case 'r':
+        arguments->yunorole = arg;
         break;
 
-    case 'd':
-        arguments->destination_keyword = arg;
+    case 'n':
+        arguments->rootname = arg;
         break;
 
     case ARGP_KEY_ARG:
@@ -145,16 +146,16 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
-    if(empty_string(arguments.source_keyword)) {
-        printf("What source project keyword?\n");
+    if(empty_string(arguments.yunorole)) {
+        printf("What yunorole keyword?\n");
         exit(-1);
     }
-    if(empty_string(arguments.destination_keyword)) {
-        printf("What destination project keyword?\n");
+    if(empty_string(arguments.rootname)) {
+        printf("What rootname keyword(s)?\n");
         exit(-1);
     }
 
-    make_skeleton(arguments.args[0], arguments.args[1], arguments.source_keyword, arguments.destination_keyword);
+    make_skeleton(arguments.args[0], arguments.args[1], arguments.yunorole, arguments.rootname);
 
     exit(0);
 }

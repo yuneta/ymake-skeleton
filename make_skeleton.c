@@ -13,9 +13,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <argp.h>
-#include <regex.h>
 #include <jansson.h>
-#include <12_walkdir.h>
+#include <ginsfsm.h>
 #include "make_skeleton.h"
 #include "clone_tree_dir.h"
 
@@ -195,24 +194,51 @@ char *capitalize(char *s)
 /***************************************************************************
  *  Values to replace
  ***************************************************************************/
-json_t *values2replace(char *old_name, char *new_name)
+PRIVATE int add_value(json_t *jn_values, char *old_name, char *new_name)
 {
-    json_t *jn_values = json_object();
-
     lower(new_name);
     lower(old_name);
-    json_object_set_new(jn_values, old_name, json_string(new_name));
+    if(!kw_has_key(jn_values, old_name)) {
+        json_object_set_new(jn_values, old_name, json_string(new_name));
+    }
 
     capitalize(new_name);
     capitalize(old_name);
-    json_object_set_new(jn_values, old_name, json_string(new_name));
+    if(!kw_has_key(jn_values, old_name)) {
+        json_object_set_new(jn_values, old_name, json_string(new_name));
+    }
 
     upper(new_name);
     upper(old_name);
-    json_object_set_new(jn_values, old_name, json_string(new_name));
+    if(!kw_has_key(jn_values, old_name)) {
+        json_object_set_new(jn_values, old_name, json_string(new_name));
+    }
 
     lower(new_name);
     lower(old_name);
+
+    return 0;
+}
+
+/***************************************************************************
+ *  Values to replace
+ ***************************************************************************/
+json_t *values2replace(char *yunorole, char *rootname)
+{
+    json_t *jn_values = json_object();
+    char yunorole_[256] = "yunorole";
+    char rootname_[256] = "rootname";
+
+    add_value(jn_values, yunorole, yunorole_);
+
+    int list_size;
+    const char **names = split2(rootname, "|, ", &list_size);
+
+    for(int i=0; i<list_size; i++) {
+        add_value(jn_values, (char *)(*(names +i)), rootname_);
+    }
+
+    split_free2(names);
 
     return jn_values;
 }
@@ -220,18 +246,14 @@ json_t *values2replace(char *old_name, char *new_name)
 /***************************************************************************
  *  Make a skeleton
  ***************************************************************************/
-int make_skeleton(char *source_path, char *destination_path_, char *source_keyword, char *destination_keyword)
+int make_skeleton(char *source_path, char *destination_path_, char *yunorole, char *rootname)
 {
     char destination_path[PATH_MAX];
     snprintf(destination_path, sizeof(destination_path), "%s", destination_path_);
     char *destination_dir = dirname(destination_path);
-    char *project = basename(destination_path);
 
-    if(empty_string(destination_keyword)) {
-        destination_keyword = project;
-    }
-
-    json_t *toreplace = values2replace(source_keyword, destination_keyword);
+    json_t *toreplace = values2replace(yunorole, rootname);
+    print_json(toreplace);
 
     if(access(destination_dir,0)!=0) {
         printf("Creating directory: %s\n", destination_dir);

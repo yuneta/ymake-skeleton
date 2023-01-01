@@ -68,14 +68,18 @@
  *  de dicha clave en el dict jn_values
  *  Busca tb "_tmpl$" y elimínalo.
  ***************************************************************************/
-int render_string(char *rendered_str, int rendered_str_size, char *str, json_t *jn_values)
+int render_string(char *rendered_str, int rendered_str_size, char *str, json_t *jn_values, BOOL is_file)
 {
     pcre *re;
     const char *error;
     int erroffset;
     int ovector[100];
 
-    snprintf(rendered_str, rendered_str_size, "%s", str);
+    if(is_file) {
+        snprintf(rendered_str, rendered_str_size, "%s_tmpl", str);
+    } else {
+        snprintf(rendered_str, rendered_str_size, "%s", str);
+    }
 
     const char *old_name; json_t *jn_value;
     json_object_foreach(jn_values, old_name, jn_value) {
@@ -148,7 +152,7 @@ int render_file(char *dst_path, char *src_path, json_t *jn_values)
     }
     printf("Creating filename: %s\n", dst_path);
     while(fgets(old_line, sizeof(old_line), f)) {
-        render_string(new_line, sizeof(new_line), old_line, jn_values);
+        render_string(new_line, sizeof(new_line), old_line, jn_values, FALSE);
         fputs(new_line, fout);
     }
     fclose(f);
@@ -159,53 +163,11 @@ int render_file(char *dst_path, char *src_path, json_t *jn_values)
 /***************************************************************************
  *
  ***************************************************************************/
-int is_regular_file(const char *path)
-{
-    struct stat path_stat;
-    stat(path, &path_stat);
-    return S_ISREG(path_stat.st_mode);
-}
-
-/***************************************************************************
- *
- ***************************************************************************/
-int is_directory(const char *path)
-{
-    struct stat path_stat;
-    stat(path, &path_stat);
-    return S_ISDIR(path_stat.st_mode);
-}
-
-/***************************************************************************
- *
- ***************************************************************************/
 int is_link(const char *path)
 {
     struct stat path_stat;
     lstat(path, &path_stat);
     return S_ISLNK(path_stat.st_mode);
-}
-
-/***************************************************************************
- *  Create a new file (only to write)
- *  The use of this functions implies the use of 00_security.h's permission system:
- *  umask will be set to 0 and we control all permission mode.
- ***************************************************************************/
-static int umask_cleared = 0;
-int newfile(const char *path, int permission, int overwrite)
-{
-    int flags = O_CREAT|O_WRONLY|O_LARGEFILE;
-
-    if(!umask_cleared) {
-        umask(0);
-        umask_cleared = 1;
-    }
-
-    if(overwrite)
-        flags |= O_TRUNC;
-    else
-        flags |= O_EXCL;
-    return open(path, flags, permission);
 }
 
 /***************************************************************************
@@ -227,81 +189,6 @@ int copy_link(
         return -1;
     }
     return 0;
-}
-
-/***************************************************************************
- *    Elimina el caracter 'x' a la derecha.
- ***************************************************************************/
-char *delete_right_char(char *s, char x)
-{
-    int l;
-
-    l = strlen(s);
-    if(l==0) {
-        return s;
-    }
-    while(--l>=0) {
-        if(*(s+l)==x) {
-            *(s+l)='\0';
-        } else {
-            break;
-        }
-    }
-    return s;
-}
-
-/***************************************************************************
- *    Elimina el caracter 'x' a la izquierda.
- ***************************************************************************/
-char *delete_left_char(char *s, char x)
-{
-    int l;
-    char c;
-
-    if(strlen(s)==0) {
-        return s;
-    }
-
-    l=0;
-    while(1) {
-        c= *(s+l);
-        if(c=='\0'){
-            break;
-        }
-        if(c==x) {
-            l++;
-        } else {
-            break;
-        }
-    }
-    if(l>0) {
-        memmove(s,s+l,strlen(s)-l+1);
-    }
-    return s;
-}
-
-/***************************************************************************
- *
- ***************************************************************************/
-char *build_path2(
-    char *path,
-    int pathsize,
-    const char *dir1,
-    const char *dir2
-)
-{
-    snprintf(path, pathsize, "%s", dir1);
-    delete_right_char(path, '/');
-
-    if(dir2 && strlen(dir2)) {
-        int l = strlen(path);
-        snprintf(path+l, pathsize-l, "/");
-        l = strlen(path);
-        snprintf(path+l, pathsize-l, "%s", dir2);
-        delete_left_char(path+l, '/');
-        delete_right_char(path, '/');
-    }
-    return path;
 }
 
 /***************************************************************************
@@ -353,7 +240,7 @@ int clone_tree_dir(
     do {
         build_path2(src_path, sizeof(src_path), src, entry->d_name);
 
-        render_string(rendered_str, sizeof(rendered_str), entry->d_name, jn_values);
+        render_string(rendered_str, sizeof(rendered_str), entry->d_name, jn_values, TRUE);
         build_path2(dst_path, sizeof(dst_path), dst, rendered_str);
 
         if (is_link(src_path)) {

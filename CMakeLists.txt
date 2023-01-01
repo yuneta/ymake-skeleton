@@ -51,8 +51,17 @@ SET (YUNO_HDRS
 
 ADD_EXECUTABLE(ymake-skeleton ${YUNO_SRCS} ${YUNO_HDRS})
 TARGET_LINK_LIBRARIES(ymake-skeleton
-    /yuneta/development/output/lib/libjansson.a
-    rt pthread dl pcre
+        /yuneta/development/output/lib/libghelpers.a
+        /yuneta/development/output/lib/libuv.a
+        /yuneta/development/output/lib/libjansson.a
+        /yuneta/development/output/lib/libunwind.a
+        /yuneta/development/output/lib/libpcre2-8.a
+
+        pthread dl  # used by libuv
+        lzma        # used by libunwind
+        m
+        util
+        pcre
 )
 
 ##############################################
