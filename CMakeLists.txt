@@ -1,8 +1,8 @@
 ##############################################
 #   CMake
 ##############################################
-project(ymake-skeleton C)
 cmake_minimum_required(VERSION 3.0)
+project(ymake-skeleton C)
 include(CheckIncludeFiles)
 include(CheckSymbolExists)
 
